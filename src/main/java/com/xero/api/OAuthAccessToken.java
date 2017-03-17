@@ -1,22 +1,13 @@
 package com.xero.api;
 
+import com.google.api.client.auth.oauth.OAuthSigner;
+import com.google.api.client.http.*;
+import com.google.api.client.http.apache.ApacheHttpTransport;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import com.xero.api.OAuthParameters;
-
-import com.google.api.client.auth.oauth.OAuthSigner;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpHeaders;
-import com.google.api.client.http.HttpMethods;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpResponseException;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.apache.ApacheHttpTransport;
 
 public class OAuthAccessToken {
 

@@ -1,16 +1,10 @@
-package com.xero.example;
-
-import java.io.IOException;
+package com.xero.api;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.xero.api.Config;
-import com.xero.api.OAuthAuthorizeToken;
-import com.xero.api.OAuthRequestToken;
-import com.xero.api.TokenStorage;
+import java.io.IOException;
 
 /**
  * Servlet implementation class RequestTokenServlet

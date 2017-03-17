@@ -1,12 +1,14 @@
 package com.xero.api;
 
-import java.io.IOException;
-import java.util.HashMap;
-
 import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
 import com.google.api.client.auth.oauth.OAuthGetTemporaryToken;
 import com.google.api.client.auth.oauth.OAuthSigner;
 import com.google.api.client.http.apache.ApacheHttpTransport;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class OAuthRequestToken 
 {
@@ -55,6 +57,7 @@ public class OAuthRequestToken
 		catch (IOException e) 
 		{
 			e.printStackTrace();
+			Logger.getGlobal().log(Level.ALL,">>"+e.getMessage());
 		}
 		tempToken = temporaryTokenResponse.token;
 		tempTokenSecret = temporaryTokenResponse.tokenSecret;

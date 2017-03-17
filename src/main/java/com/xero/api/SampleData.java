@@ -1,4 +1,6 @@
-package com.xero.example;
+package com.xero.api;
+
+import com.xero.model.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -6,9 +8,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
-
-import com.xero.api.XeroClient;
-import com.xero.model.*;
 
 public class SampleData {
 	

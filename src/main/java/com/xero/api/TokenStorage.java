@@ -1,14 +1,12 @@
-package com.xero.example;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
+package com.xero.api;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class TokenStorage 
 {
@@ -61,7 +59,7 @@ public class TokenStorage
 		System.out.print("Saving tokens");
 
 		while(iterator.hasNext()) {
-			Map.Entry<?, ?> mentry = iterator.next();
+			Entry<?, ?> mentry = iterator.next();
 			String key = (String)mentry.getKey();
 			String value = (String)mentry.getValue();
 

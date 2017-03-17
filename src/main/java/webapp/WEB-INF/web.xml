@@ -7,7 +7,7 @@
 
    <servlet>
   	<servlet-name>RequestTokenServlet</servlet-name>
-  	<servlet-class>com.xero.example.RequestTokenServlet</servlet-class>
+  	<servlet-class>com.xero.api.RequestTokenServlet</servlet-class>
   </servlet>
   <servlet-mapping>
   	<servlet-name>RequestTokenServlet</servlet-name>
@@ -15,7 +15,7 @@
   </servlet-mapping>
   <servlet>
 	<servlet-name>CallbackServlet</servlet-name>
-	<servlet-class>com.xero.example.CallbackServlet</servlet-class>
+	<servlet-class>com.xero.api.CallbackServlet</servlet-class>
   </servlet>
   <servlet>
   	<servlet-name>OAuthAccessToken</servlet-name>
@@ -23,7 +23,7 @@
   </servlet>
   <servlet>
   	<servlet-name>RequestResourceServlet</servlet-name>
-  	<servlet-class>com.xero.example.RequestResourceServlet</servlet-class>
+  	<servlet-class>com.xero.api.RequestResourceServlet</servlet-class>
   </servlet>
   <servlet-mapping>
 	<servlet-name>CallbackServlet</servlet-name>

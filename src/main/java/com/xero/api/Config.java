@@ -1,22 +1,22 @@
 package com.xero.api;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
 public class Config {
 
 	private String APP_TYPE = "Public";
 	private String USER_AGENT = "Xero-Java-SDK-Default";
 	private String ACCEPT = "application/xml";
-	private String CONSUMER_KEY;
-	private String CONSUMER_SECRET;
+	private String CONSUMER_KEY="TIHKWFI8HCTGC7JRXJ7KRKHM3E5KGZ";
+	private String CONSUMER_SECRET="I3RME2F1NK71QFPBOL9XBYQLL50DMI";
 	private String API_BASE_URL = "https://api.xero.com";
 	private String API_ENDPOINT_URL = "https://api.xero.com/api.xro/2.0/";
 	private String REQUEST_TOKEN_URL = "https://api.xero.com/oauth/RequestToken";
@@ -79,6 +79,8 @@ public class Config {
 	public String getRequestTokenUrl() 
 	{
 		System.out.println("Request Token URL: " + REQUEST_TOKEN_URL);
+		System.out.println("APP type is : " + APP_TYPE);
+		System.out.println("Request CallBackBase URL: " + CALLBACK_BASE_URL);
 		return REQUEST_TOKEN_URL;
 	}
 	  
@@ -185,10 +187,12 @@ public class Config {
 		if (jsonObject.containsKey("CallbackBaseUrl")) 
 		{
 			CALLBACK_BASE_URL = (String) jsonObject.get("CallbackBaseUrl");
+            System.out.println("Read baseURL as >>>> "+CALLBACK_BASE_URL);
 			if (jsonObject.containsKey("CallbackPath")) 
 			{
 				String callbackPath = (String) jsonObject.get("CallbackPath");
 				AUTH_CALLBACK_URL = CALLBACK_BASE_URL + callbackPath;
+				System.out.println("Read callpath as >>>> "+callbackPath);
 			}
 		}
 		
