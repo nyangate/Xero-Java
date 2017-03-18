@@ -56,12 +56,14 @@ public class TokenStorage
 	{
 		Set<Entry<String, String>> set = map.entrySet();
 		Iterator<Entry<String, String>> iterator = set.iterator();
-		System.out.print("Saving tokens");
+		System.out.println("Saving tokens");
 
 		while(iterator.hasNext()) {
 			Entry<?, ?> mentry = iterator.next();
 			String key = (String)mentry.getKey();
 			String value = (String)mentry.getValue();
+			System.out.println("Saving key "+key);
+			System.out.println("Saving value "+value);
 
 			//System.out.print("key is: "+ key + " & Value is: " + value);
 

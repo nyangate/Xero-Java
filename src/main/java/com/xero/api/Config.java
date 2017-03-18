@@ -1,13 +1,13 @@
 package com.xero.api;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseCredentials;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 
 public class Config {
@@ -34,7 +34,9 @@ public class Config {
 	public Config(String configFile) {
 		this.configFile = configFile;
 		load();
+        initializeFireBase();
 	}
+
 	   
 	/* Static 'instance' method */
 	public static Config getInstance() 
@@ -45,6 +47,22 @@ public class Config {
 		}
 	    return instance;
 	}
+    private void initializeFireBase() {
+        String HOMEDIR = System.getProperty("user.home");
+        FirebaseOptions options = null;
+        try {
+            options = new FirebaseOptions.Builder()
+                    .setCredential(FirebaseCredentials.fromCertificate(
+                            new FileInputStream(HOMEDIR + "/bambapos_firebasekey.json")))
+                    .setDatabaseUrl("https://bambapos-7cf8c.firebaseio.com")
+                    .build();
+            FirebaseApp.initializeApp(options);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
 	
 	public String getAppType() 
 	{

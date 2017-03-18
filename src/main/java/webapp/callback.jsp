@@ -11,8 +11,13 @@
 </head>
 <body>
 <div class="container">
-	<h1>Xero API - Java</h1>
-	<a href="./RequestResourceServlet">Let's make some API calls</a>
+	<h4>Products,Invoices and Payments are being updated in Xero</h4>
+	<button>
+        <a href="http://xero.com">Take me to Xero</a>
+    </button>
+	<br>
+	<br>
+	<a href="http://app.bambapos.com">Take me to Bambapos</a>
 </div>
 
 </body>
