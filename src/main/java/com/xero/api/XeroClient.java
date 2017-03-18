@@ -102,7 +102,7 @@ public class XeroClient {
 		req.setTokenSecret(tokenSecret);
 		
 		resp = req.execute();
-			
+
 		if (resp.getStatusCode() != 200) {
 		      throw newApiException(resp);
 		}
@@ -116,7 +116,7 @@ public class XeroClient {
 		OAuthRequestResource req = new OAuthRequestResource(config, endPoint,"POST",contents,null);
 		req.setToken(token);
 		req.setTokenSecret(tokenSecret);
-
+		System.out.println(">>>>>Contents being sent");
 		resp = req.execute();
 		if (resp.getStatusCode() == 401) {
 			System.out.println("Token Problem: " + resp.parseAsString());
@@ -620,6 +620,7 @@ public class XeroClient {
 	public List<Invoice> createInvoices(List<Invoice> invoices) throws IOException {
 		ArrayOfInvoice array = new ArrayOfInvoice();
 		array.getInvoice().addAll(invoices);
+		System.out.println("Invoice to create: "+array.getInvoice().size());
 		return post("Invoices", objFactory.createInvoices(array)).getInvoices().getInvoice();
 	}
 	
@@ -672,7 +673,7 @@ public class XeroClient {
 	public List<Item> createItems(List<Item> objects) throws IOException {
 		ArrayOfItem array = new ArrayOfItem();
 		array.getItem().addAll(objects);
-		return put("Items", objFactory.createItems(array)).getItems().getItem();
+		return post("Items", objFactory.createItems(array)).getItems().getItem();
 	}
 	
 	public List<Item> updateItem(List<Item> objects) throws IOException {

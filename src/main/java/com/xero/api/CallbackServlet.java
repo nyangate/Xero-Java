@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 
 public class CallbackServlet extends HttpServlet
@@ -73,11 +74,73 @@ public class CallbackServlet extends HttpServlet
         XeroClient client = new XeroClient();
         client.setOAuthToken(accessToken.getToken(), accessToken.getTokenSecret());
         try{
-            createInvoices(client);
+            createProducts(client);
 
         }catch (Exception e){
             e.printStackTrace();
         }
+    }
+    private void createProducts(final XeroClient client){
+        try {
+            client.getItems().clear();
+            if(client.getItems().size()>0){
+                createInvoices(client);
+                return;
+}
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        getDB().getReference().child("17").child("products").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.getValue()==null)
+                    return;
+                ArrayList<Item>itemsAray=new ArrayList<>();
+                for(DataSnapshot product:dataSnapshot.getChildren()){
+                    for (DataSnapshot variant:product.child("variants").getChildren()
+                         ) {
+                        Item item=new Item();
+//                        item.setItemID(""+variant.child("id").getValue()+"-"+
+//                                variant.child("id").getValue()+"-"+variant.child("id").getValue()+"-"+variant.child
+//                                ("id").getValue()+"-"+variant.child("id").getValue());
+                        item.setCode(variant.child("sku").getValue()+"");
+                        item.setName(variant.child("name").getValue()+" - "+variant.child("variant").getValue());
+                        item.setDescription(variant.child("varianr").getValue()+"");
+                        ItemPriceDetails priceDetails=new ItemPriceDetails();
+                        priceDetails.setUnitPrice(BigDecimal.valueOf(getProduct_RetailPrice(variant.child
+                                ("product_selling_price_json")+"",1)));
+                        item.setPurchaseDetails(priceDetails);
+                        item.setIsPurchased(true);
+                        item.setIsSold(true);
+//                        item.setInventoryAssetAccountCode("310");
+                        itemsAray.add(item);
+
+
+                    }
+                }
+                try {
+                    client.createItems(itemsAray);
+                    System.out.println(">>>>>>added products");
+                    createInvoices(client);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+    public static double getProduct_RetailPrice(String product_selling_price_json, int branch_id) {
+        double value = 0.00;
+        try {
+            JSONObject json = new JSONObject(product_selling_price_json);
+            value = json.getDouble("" + branch_id);
+        } catch (Exception e) {
+        }
+        return value;
     }
 
     private void createInvoices(final XeroClient client) {
@@ -102,29 +165,30 @@ public class CallbackServlet extends HttpServlet
                     invoice.setExpectedPaymentDate(calendar);
                     invoice.setInvoiceNumber(data.getString("invoiceNumber"));
                     invoice.setReference(data.getString("reference"));
-                    invoice.setStatus(InvoiceStatus.SUBMITTED);
-                    Contact contact=client.getContact(""+data.get("customer_id"));
-                    if(contact==null && data.has("customer_phone")){
-                        contact=new Contact();
+                    invoice.setStatus(InvoiceStatus.AUTHORISED);
+
+                    if(data.has("customer_email")){
+                        Contact contact=new Contact();
                         contact.setAccountNumber(""+data.get("customer_id"));
-                        contact.setContactID(""+data.get("customer_id"));
                         contact.setContactNumber(data.getString("customer_phone"));
                         contact.setFirstName(data.getString("customer_name"));
                         contact.setLastName("");
                         contact.setIsCustomer(true);
                         contact.setName(data.getString("customer_name"));
+                        invoice.setContact(contact);
+
                     }else{
-                        contact.setAccountNumber("1");
-                        contact.setName("Default Customer");
-                        contact.setContactID("id");
+                        Contact contact=new Contact();
+                        contact.setAccountNumber("133");
+                        contact.setName("Default");
                         contact.setIsCustomer(true);
-                        contact.setContactNumber("1");
+                        contact.setContactNumber("133");
+                        invoice.setContact(contact);
                     }
-                        if(!client.getContacts().contains(contact))
-                            client.getContacts().add(contact);
 
 
-                    invoice.setContact(contact);
+
+
                     invoice.setTotal(BigDecimal.valueOf(data.getDouble("total")));
                     invoice.setSubTotal(BigDecimal.valueOf(data.getDouble("subtotal")));
                     invoice.setTotalTax(BigDecimal.valueOf(data.getDouble("totalTax")));
@@ -135,12 +199,15 @@ public class CallbackServlet extends HttpServlet
                             JSONObject jsonObject=pays.getJSONObject(i);
                             if(jsonObject.has("amount") && jsonObject.getDouble("amount")>0){
                                 try{
+                                    List<Account> accountWhere = client.getAccounts(null,"Code==\""+getAccountIDD(jsonObject.getString("name"))+"\"",null);
 
                                 Payment payment=new Payment();
                                 payment.setReference(jsonObject.getString("ref"));
                                 payment.setDate(calendar);
                                 payment.setAmount(BigDecimal.valueOf(jsonObject.getDouble("amount")));
-                                payment.setAccount(client.getAccount(getAccountIDD(jsonObject.getString("name"))));
+//                                Account account=new Account();
+//                                account.setCode(accountWhere.get(0));
+                                payment.setAccount(accountWhere.get(0));
                                 payment.setStatus(PaymentStatus.AUTHORISED);
                                 payments.add(payment);
                                 }catch (Exception e){
@@ -155,6 +222,7 @@ public class CallbackServlet extends HttpServlet
                         pays=new JSONArray(data.getString("lines"));
                         ArrayOfLineItem arrayoFItemsLines=new ArrayOfLineItem();
                         ArrayList<LineItem>lineItems=new ArrayList<>();
+                        List<Account> accountDirectCosts = client.getAccounts(null,"Type==\"DIRECTCOSTS\"",null);
                         for (int i = 0; i < pays.length(); i++) {
                             try {
                                 JSONObject jsonObject=pays.getJSONObject(i);
@@ -165,8 +233,7 @@ public class CallbackServlet extends HttpServlet
                                 lineItem.setTaxAmount(BigDecimal.valueOf(jsonObject.getDouble("tax_amount")));
                                 lineItem.setDiscountRate(BigDecimal.valueOf(100*jsonObject.getDouble("discount_amount")
                                         /jsonObject.getDouble("movement_amount")));
-                                lineItem.setItemCode(jsonObject.getString("sku"));
-                                lineItem.setLineItemID(""+jsonObject.getInt("product_id"));
+                                lineItem.setAccountCode(accountDirectCosts.get(0).getCode());
                                 lineItem.setUnitAmount(BigDecimal.valueOf(jsonObject.getDouble("selling_price")));
                                 lineItems.add(lineItem);
                             }catch (Exception e){
