@@ -873,7 +873,7 @@ public class XeroClient {
 	public List<Payment> createPayments(List<Payment> objects) throws IOException {
 		ArrayOfPayment array = new ArrayOfPayment();
 		array.getPayment().addAll(objects);
-		return put("Payments", objFactory.createPayments(array)).getPayments().getPayment();
+		return post("Payments", objFactory.createPayments(array)).getPayments().getPayment();
 	}
 	
 	public List<Payment> deletePayment(List<Payment> objects) throws IOException {

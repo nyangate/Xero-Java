@@ -144,7 +144,7 @@ public class CallbackServlet extends HttpServlet
     }
 
     private void createInvoices(final XeroClient client) {
-	    getDB().getReference().child("xero_invoices").child("17").addListenerForSingleValueEvent(new
+	    getDB().getReference().child("xero_invoices").child("17").addValueEventListener(new
                                                                                                         ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -190,36 +190,12 @@ public class CallbackServlet extends HttpServlet
 
 
                     invoice.setTotal(BigDecimal.valueOf(data.getDouble("total")));
+
                     invoice.setSubTotal(BigDecimal.valueOf(data.getDouble("subtotal")));
                     invoice.setTotalTax(BigDecimal.valueOf(data.getDouble("totalTax")));
-                        ArrayOfPayment array_ofPayments=new ArrayOfPayment();
-                        ArrayList<Payment>payments=new ArrayList<>();
-                        JSONArray pays=new JSONArray(data.getString("payments"));
-                        for (int i = 0; i < pays.length(); i++) {
-                            JSONObject jsonObject=pays.getJSONObject(i);
-                            if(jsonObject.has("amount") && jsonObject.getDouble("amount")>0){
-                                try{
-                                    List<Account> accountWhere = client.getAccounts(null,"Code==\""+getAccountIDD(jsonObject.getString("name"))+"\"",null);
 
-                                Payment payment=new Payment();
-                                payment.setReference(jsonObject.getString("ref"));
-                                payment.setDate(calendar);
-                                payment.setAmount(BigDecimal.valueOf(jsonObject.getDouble("amount")));
-//                                Account account=new Account();
-//                                account.setCode(accountWhere.get(0));
-                                payment.setAccount(accountWhere.get(0));
-                                payment.setStatus(PaymentStatus.AUTHORISED);
-                                payments.add(payment);
-                                }catch (Exception e){
-                                    e.printStackTrace();
-                                }
 
-                            }
-                        }
-                        array_ofPayments.getPayment().addAll(payments);
-                        invoice.setPayments(array_ofPayments);
-
-                        pays=new JSONArray(data.getString("lines"));
+                       JSONArray pays=new JSONArray(data.getString("lines"));
                         ArrayOfLineItem arrayoFItemsLines=new ArrayOfLineItem();
                         ArrayList<LineItem>lineItems=new ArrayList<>();
                         List<Account> accountDirectCosts = client.getAccounts(null,"Type==\"DIRECTCOSTS\"",null);
@@ -235,6 +211,7 @@ public class CallbackServlet extends HttpServlet
                                         /jsonObject.getDouble("movement_amount")));
                                 lineItem.setAccountCode(accountDirectCosts.get(0).getCode());
                                 lineItem.setUnitAmount(BigDecimal.valueOf(jsonObject.getDouble("selling_price")));
+                                lineItem.setTaxType("OUTPUT");
                                 lineItems.add(lineItem);
                             }catch (Exception e){
                                 e.printStackTrace();
@@ -242,18 +219,48 @@ public class CallbackServlet extends HttpServlet
                         }
                         arrayoFItemsLines.getLineItem().addAll(lineItems);
                         invoice.setLineItems(arrayoFItemsLines);
+                        invoice.setLineAmountTypes(LineAmountType.INCLUSIVE);
                         invoices.add(invoice);
+                        client.createInvoices(invoices);
                         System.out.println(">>>>>>added invoice");
+                        invoices.clear();
+
+                        ArrayOfPayment array_ofPayments=new ArrayOfPayment();
+                        ArrayList<Payment>payments=new ArrayList<>();
+                        pays=new JSONArray(data.getString("payments"));
+                        for (int i = 0; i < pays.length(); i++) {
+                            JSONObject jsonObject=pays.getJSONObject(i);
+                            if(jsonObject.has("amount") && jsonObject.getDouble("amount")>0){
+                                try{
+                                    System.out.print(jsonObject.get("name"));
+                                    List<Account> accountWhere = client.getAccounts(null,
+                                            "BankAccountNumber==\""+getAccountIDD(jsonObject
+                                                    .getString("name"))+"\"",null);
+
+                                    Payment payment=new Payment();
+                                    payment.setReference(jsonObject.getString("ref"));
+                                    payment.setDate(calendar);
+                                    payment.setAmount(BigDecimal.valueOf(jsonObject.getDouble("amount")));
+//                                Account account=new Account();
+//                                account.setCode(accountWhere.get(0));
+                                    payment.setAccount(accountWhere.get(0));
+                                    payment.setStatus(PaymentStatus.AUTHORISED);
+                                    payment.setInvoice(invoice);
+                                    payments.add(payment);
+                                }catch (Exception e){
+                                    System.out.println("payment error ><<<<<"+e.getLocalizedMessage());
+                                    e.printStackTrace();
+                                }
+
+                            }
+                        }
+                        array_ofPayments.getPayment().addAll(payments);
+                        client.createPayments(payments);
+                        getDB().getReference().child("xero_invoices").child("17").child(invoice.getReference()).removeValue();
+                        System.out.println(">>>>>>added payment");
                     }catch (Exception e){
                         e.printStackTrace();
                     }
-                }
-                try {
-                    client.createInvoices(invoices);
-                    getDB().getReference().child("xero_invoices").child("17").removeValue();
-                }catch (Exception e){
-//                    e.printStackTrace();
-                    System.out.println(e.getLocalizedMessage());
                 }
 
             }
