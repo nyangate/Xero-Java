@@ -116,9 +116,9 @@ public class CallbackServlet extends HttpServlet {
                             item.setIsPurchased(true);
                             item.setQuantityOnHand(BigDecimal.valueOf(getProduct_RetailPrice(variant.child
                                     ("qty_at_hand").getValue() + "", 1)));
-                            item.setIsTrackedAsInventory(true);
-//                            purchaseDetails.setCOGSAccountCode("300");
-//                            item.setInventoryAssetAccountCode("630");
+//                            item.setIsTrackedAsInventory(true);
+                            purchaseDetails.setCOGSAccountCode("310");
+                            item.setInventoryAssetAccountCode("630");
                         }
 
                             itemsAray.add(item);
