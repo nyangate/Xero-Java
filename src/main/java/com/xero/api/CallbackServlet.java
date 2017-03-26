@@ -79,6 +79,11 @@ public class CallbackServlet extends HttpServlet {
         try {
             client.getItems().clear();
             if (client.getItems().size() > 0) {
+//                if (client.getAccounts().size() < 1) {
+//                }
+//                if(client.getContacts().size()<1)
+                createSuuppliers(client);
+                createBankAccounts(client);
                 createInvoices(client);
                 return;
             }
@@ -98,9 +103,9 @@ public class CallbackServlet extends HttpServlet {
 //                        item.setItemID(""+variant.child("id").getValue()+"-"+
 //                                variant.child("id").getValue()+"-"+variant.child("id").getValue()+"-"+variant.child
 //                                ("id").getValue()+"-"+variant.child("id").getValue());
-                        String name =variant.child("name").getValue()+" - "+variant.child("variant").getValue();
+                        String name = variant.child("name").getValue() + " - " + variant.child("variant").getValue();
                         item.setCode(variant.child("sku").getValue() + "");
-                        item.setName(name.length()>50?""+variant.child("variant").getValue():name);
+                        item.setName(name.length() > 50 ? "" + variant.child("variant").getValue() : name);
                         item.setDescription(variant.child("varianr").getValue() + "");
                         ItemPriceDetails purchaseDetails = new ItemPriceDetails();
                         purchaseDetails.setUnitPrice(BigDecimal.valueOf(getProduct_RetailPrice(variant.child
@@ -121,7 +126,7 @@ public class CallbackServlet extends HttpServlet {
                             item.setInventoryAssetAccountCode("630");
                         }
 
-                            itemsAray.add(item);
+                        itemsAray.add(item);
 
 
                     }
@@ -152,7 +157,50 @@ public class CallbackServlet extends HttpServlet {
         }
         return value;
     }
+    private void createReceipts(final XeroClient client){
+        getDB().getReference().child("17").child("receipts").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot==null||dataSnapshot.getValue()==null)
+                        return;
+                    for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                        try {
+                            Receipt receipt=new Receipt();
+                            receipt.setContact(client.getContacts(null,"Name==\""+dataSnapshot1.child
+                                    ("supplier").getValue().toString() + "\"",null).get(0));
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(properFormat.parse(dataSnapshot1.child("date").getValue().toString()));
 
+                            receipt.setDate(calendar);
+                            receipt.setReceiptID(""+dataSnapshot1.child("reference").getValue());
+                            JSONArray jsonArray=new JSONArray(""+dataSnapshot1.child("items").getValue());
+                            ArrayList<LineItem>lineItems=new ArrayList<>();
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject jsonObject=jsonArray.getJSONObject(i);
+                                LineItem lineItem=new LineItem();
+                                lineItem.setItemCode(jsonObject.getString("sku"));
+                                lineItem.setQuantity(BigDecimal.valueOf(jsonObject.getDouble("quantity")));
+                                lineItems.add(lineItem);
+
+                            }
+                            ArrayOfLineItem lineItemss=new ArrayOfLineItem();
+                            lineItemss.getLineItem().addAll(lineItems);
+                            receipt.setLineItems(lineItemss);
+                            ArrayList<Receipt>receipts=new ArrayList<>();
+                            receipts.add(receipt);
+                            client.createReceipts(receipts);
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
     private void createInvoices(final XeroClient client) {
         getDB().getReference().child("xero_invoices").child("17").addValueEventListener(new
                                                                                                 ValueEventListener() {
@@ -280,28 +328,87 @@ public class CallbackServlet extends HttpServlet {
                                                                                                 });
     }
 
+    private void createSuuppliers(final XeroClient client) {
+        getDB().getReference().child("17").child("suppliers").addValueEventListener(new
+                                                                                            ValueEventListener() {
+                                                                                                @Override
+                                                                                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                                                                                    if (dataSnapshot.getValue() == null)
+                                                                                                        return;
+                                                                                                    ArrayList<Contact> contacts = new ArrayList<>();
+                                                                                                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+                                                                                                        try {
+                                                                                                            Contact contact = new Contact();
+                                                                                                            contact
+                                                                                                                    .setAccountNumber("" + snapshot.child("phone").getValue());
+                                                                                                            contact
+                                                                                                                    .setContactNumber(""+snapshot.child("phone").getValue());
+                                                                                                            contact.setIsCustomer(false);
+                                                                                                            contact.setIsSupplier(true);
+                                                                                                            contact
+                                                                                                                    .setEmailAddress(""+snapshot.child("email").getValue());
+                                                                                                            contact
+                                                                                                                    .setName(""+snapshot.child("name").getValue());
+                                                                                                            ArrayOfAddress address=new ArrayOfAddress();
+                                                                                                            Address
+                                                                                                                    address1=new Address();
+                                                                                                            address1.setAddressLine1(""+snapshot.child("address").getValue());
+                                                                                                            address1.setAddressType(AddressType.STREET);
+                                                                                                            address
+                                                                                                                    .getAddress().add(address1);
+                                                                                                            contact
+                                                                                                                    .setAddresses(address);
+                                                                                                            contacts.add(contact);
+                                                                                                            client.createContact(contacts);
+                                                                                                            contacts.clear();
+
+
+                                                                                                            System
+                                                                                                                    .out.println(">>>>>>added supplier");
+                                                                                                        } catch (Exception e) {
+                                                                                                            e.printStackTrace();
+                                                                                                        }
+                                                                                                    }
+
+                                                                                                }
+
+                                                                                                @Override
+                                                                                                public void onCancelled(DatabaseError databaseError) {
+
+                                                                                                }
+                                                                                            });
+    }
+
     private void createBankAccounts(XeroClient client) {
         String[] accounts = new String[]{"MCASH", "CREDIT", "VISA", "LOYALTY", "VOUCHER", "CASH"};
         ArrayList<Account> bankAccounts = new ArrayList<>();
+
         for (String accountname : accounts) {
-            String accountNumber = getAccountIDD(accountname);
-            Account account = new Account();
-            account.setCode(accountNumber.substring(0, 3));
-            account.setBankAccountNumber(accountNumber);
-            account.setBankAccountType(BankAccountType.BANK);
-            account.setCurrencyCode(CurrencyCode.KES);
-            account.setDescription(accountname.toLowerCase() + " Payments");
-            account.setEnablePaymentsToAccount(true);
-            account.setName(accountname);
-            account.setStatus(AccountStatus.ACTIVE);
-            account.setType(AccountType.BANK);
-            bankAccounts.add(account);
+            try {
+                String accountNumber = getAccountIDD(accountname);
+                List<Account> accountWhere = client.getAccounts(null,
+                        "BankAccountNumber==\"" + accountNumber + "\"", null);
+                if (accountWhere.size() > 0)
+                    break;
+                Account account = new Account();
+                account.setCode(accountNumber.substring(0, 3));
+                account.setBankAccountNumber(accountNumber);
+                account.setBankAccountType(BankAccountType.BANK);
+                account.setCurrencyCode(CurrencyCode.KES);
+                account.setDescription(accountname.toLowerCase() + " Payments");
+                account.setEnablePaymentsToAccount(true);
+                account.setName(accountname);
+                account.setStatus(AccountStatus.ACTIVE);
+                account.setType(AccountType.BANK);
+                bankAccounts.add(account);
+                client.createAccounts(bankAccounts);
+                bankAccounts.clear();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
-        try {
-            client.createAccounts(bankAccounts);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
     }
 
     private String getAccountIDD(String name) {
