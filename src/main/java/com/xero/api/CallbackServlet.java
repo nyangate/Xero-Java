@@ -85,6 +85,7 @@ public class CallbackServlet extends HttpServlet {
                 createSuuppliers(client);
                 createBankAccounts(client);
                 createInvoices(client);
+                createReceipts(client);
                 return;
             }
         } catch (IOException e) {
@@ -158,37 +159,60 @@ public class CallbackServlet extends HttpServlet {
         return value;
     }
     private void createReceipts(final XeroClient client){
-        getDB().getReference().child("17").child("receipts").addValueEventListener(new ValueEventListener() {
+        getDB().getReference().child("17").child("received").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot==null||dataSnapshot.getValue()==null)
                         return;
                     for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
                         try {
+                            JSONObject jsonObjectt=new JSONObject(""+dataSnapshot1.getValue());
+                            String supplierphone=jsonObjectt.getString("supplier");
+                            System.out.print(jsonObjectt);
                             Receipt receipt=new Receipt();
-                            receipt.setContact(client.getContacts(null,"Name==\""+dataSnapshot1.child
-                                    ("supplier").getValue().toString() + "\"",null).get(0));
+
+                            Contact contact=client.getContacts(null,"AccountNumber==\""+supplierphone+ "\"",null).get(0);
+                            receipt.setContact(contact);
                             Calendar calendar = Calendar.getInstance();
-                            calendar.setTime(properFormat.parse(dataSnapshot1.child("date").getValue().toString()));
+                            calendar.setTime(properFormat.parse(jsonObjectt.getString("date")));
 
                             receipt.setDate(calendar);
-                            receipt.setReceiptID(""+dataSnapshot1.child("reference").getValue());
-                            JSONArray jsonArray=new JSONArray(""+dataSnapshot1.child("items").getValue());
+                            receipt.setReference(""+jsonObjectt.getString("reference"));
+                            User user=client.getUsers().get(0);
+                            receipt.setUser(user);
+                            JSONArray jsonArray=new JSONArray(jsonObjectt.getString("items"));
                             ArrayList<LineItem>lineItems=new ArrayList<>();
+                            List<Account> accountExpense = client.getAccounts(null,"Type==\"EXPENSE\"",null);
                             for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject jsonObject=jsonArray.getJSONObject(i);
-                                LineItem lineItem=new LineItem();
-                                lineItem.setItemCode(jsonObject.getString("sku"));
-                                lineItem.setQuantity(BigDecimal.valueOf(jsonObject.getDouble("quantity")));
-                                lineItems.add(lineItem);
+                                try {
+                                    JSONObject jsonObject=jsonArray.getJSONObject(i);
+                                    List<Item> itemslist = client.getItems(null, "Code==\""+jsonObject.getString("sku")+"\"", null);
+
+                                    LineItem lineItem=new LineItem();
+                                    lineItem.setItemCode(jsonObject.getString("sku"));
+                                    lineItem.setDescription("Same as ordered");
+                                    lineItem.setAccountCode(accountExpense.get(0).getCode());
+                                    lineItem.setUnitAmount(itemslist.get(0).getPurchaseDetails().getUnitPrice());
+                                    lineItem.setQuantity(BigDecimal.valueOf(jsonObject.getDouble("quantity")));
+                                    lineItems.add(lineItem);
+                                }catch (Exception e){
+                                   e.printStackTrace();
+                                }
+
 
                             }
                             ArrayOfLineItem lineItemss=new ArrayOfLineItem();
                             lineItemss.getLineItem().addAll(lineItems);
                             receipt.setLineItems(lineItemss);
+                            receipt.setLineAmountTypes(LineAmountType.INCLUSIVE);
                             ArrayList<Receipt>receipts=new ArrayList<>();
                             receipts.add(receipt);
                             client.createReceipts(receipts);
+                            System.out.print("Created receipts");
+                            getDB().getReference().child("17").child("received").child(dataSnapshot1.getKey()
+                                    .toString())
+                                    .removeValue();
+
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -337,7 +361,12 @@ public class CallbackServlet extends HttpServlet {
                                                                                                         return;
                                                                                                     ArrayList<Contact> contacts = new ArrayList<>();
                                                                                                     for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
                                                                                                         try {
+                                                                                                            if(client
+                                                                                                                    .getContacts(null,"AccountNumber==\""+snapshot.child
+                                                                                                                    ("phone").getValue().toString() + "\"",null).size()>0)
+                                                                                                                break;
                                                                                                             Contact contact = new Contact();
                                                                                                             contact
                                                                                                                     .setAccountNumber("" + snapshot.child("phone").getValue());
