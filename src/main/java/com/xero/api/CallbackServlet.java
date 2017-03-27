@@ -163,7 +163,8 @@ public class CallbackServlet extends HttpServlet {
         return value;
     }
     private void createReceipts(final XeroClient client){
-        getDB().getReference().child(client.getStoreid()).child("received").addValueEventListener(new ValueEventListener() {
+        getDB().getReference().child("xero_receipts").child(client.getStoreid()).addValueEventListener(new
+                                                                                                           ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot==null||dataSnapshot.getValue()==null)
@@ -213,7 +214,7 @@ public class CallbackServlet extends HttpServlet {
                             receipts.add(receipt);
                             client.createReceipts(receipts);
                             System.out.print("Created receipts");
-                            getDB().getReference().child(client.getStoreid()).child("received").child(dataSnapshot1.getKey()
+                            getDB().getReference().child("xero_receipts").child(client.getStoreid()).child(dataSnapshot1.getKey()
                                     .toString())
                                     .removeValue();
 
