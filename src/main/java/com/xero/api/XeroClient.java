@@ -21,7 +21,52 @@ public class XeroClient {
 	private Config config;  
 	private String token = null;
 	private String tokenSecret = null;
-	
+
+	public Config getConfig() {
+		return config;
+	}
+
+	public void setConfig(Config config) {
+		this.config = config;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
+
+	public String getTokenSecret() {
+		return tokenSecret;
+	}
+
+	public void setTokenSecret(String tokenSecret) {
+		this.tokenSecret = tokenSecret;
+	}
+
+	public String getStoreid() {
+		return storeid;
+	}
+
+	public void setStoreid(String storeid) {
+		this.storeid = storeid;
+	}
+
+	public static DateFormat getUtcFormatter() {
+		return utcFormatter;
+	}
+
+	public static Pattern getMessagePattern() {
+		return MESSAGE_PATTERN;
+	}
+
+	public ObjectFactory getObjFactory() {
+		return objFactory;
+	}
+
+	private String storeid;
 	protected static final DateFormat utcFormatter;
 	static 
 	{

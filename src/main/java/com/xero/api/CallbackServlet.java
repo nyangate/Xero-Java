@@ -42,6 +42,7 @@ public class CallbackServlet extends HttpServlet {
 
         // Swap your temp token for 30 oauth token
         OAuthAccessToken accessToken = new OAuthAccessToken(config);
+        String storeid=storage.get(request,"storeid");
         accessToken.build(verifier, storage.get(request, "tempToken"), storage.get(request, "tempTokenSecret")).execute();
 
         if (!accessToken.isSuccess()) {
@@ -54,7 +55,7 @@ public class CallbackServlet extends HttpServlet {
             // DEMONSTRATION ONLY - Store in Cookie - you can extend TokenStorage
             // and implement the save() method for your database
             storage.save(response, accessToken.getAll());
-            updateXero(accessToken);
+            updateXero(accessToken,storeid);
             request.getRequestDispatcher("callback.jsp").forward(request, response);
         }
     }
@@ -64,8 +65,10 @@ public class CallbackServlet extends HttpServlet {
                 .getInstance();
     }
 
-    private void updateXero(OAuthAccessToken accessToken) {
+    private void updateXero(OAuthAccessToken accessToken,String storeid) {
         XeroClient client = new XeroClient();
+        getDB().getReference().child("xero_tokens").child(storeid).setValue(accessToken.getAll());
+        client.setStoreid(storeid);
         client.setOAuthToken(accessToken.getToken(), accessToken.getTokenSecret());
         try {
             createProducts(client);
@@ -91,7 +94,8 @@ public class CallbackServlet extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        getDB().getReference().child("17").child("products").addListenerForSingleValueEvent(new ValueEventListener() {
+        getDB().getReference().child(client.getStoreid()).child("products").addListenerForSingleValueEvent(new ValueEventListener
+                () {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot.getValue() == null)
@@ -159,7 +163,7 @@ public class CallbackServlet extends HttpServlet {
         return value;
     }
     private void createReceipts(final XeroClient client){
-        getDB().getReference().child("17").child("received").addValueEventListener(new ValueEventListener() {
+        getDB().getReference().child(client.getStoreid()).child("received").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                     if(dataSnapshot==null||dataSnapshot.getValue()==null)
@@ -209,7 +213,7 @@ public class CallbackServlet extends HttpServlet {
                             receipts.add(receipt);
                             client.createReceipts(receipts);
                             System.out.print("Created receipts");
-                            getDB().getReference().child("17").child("received").child(dataSnapshot1.getKey()
+                            getDB().getReference().child(client.getStoreid()).child("received").child(dataSnapshot1.getKey()
                                     .toString())
                                     .removeValue();
 
@@ -226,7 +230,7 @@ public class CallbackServlet extends HttpServlet {
         });
     }
     private void createInvoices(final XeroClient client) {
-        getDB().getReference().child("xero_invoices").child("17").addValueEventListener(new
+        getDB().getReference().child("xero_invoices").child(client.getStoreid()).addValueEventListener(new
                                                                                                 ValueEventListener() {
                                                                                                     @Override
                                                                                                     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -336,7 +340,8 @@ public class CallbackServlet extends HttpServlet {
                                                                                                                 }
                                                                                                                 array_ofPayments.getPayment().addAll(payments);
                                                                                                                 client.createPayments(payments);
-                                                                                                                getDB().getReference().child("xero_invoices").child("17").child(invoice.getReference()).removeValue();
+                                                                                                                getDB
+                                                                                                                        ().getReference().child("xero_invoices").child(client.getStoreid()).child(invoice.getReference()).removeValue();
                                                                                                                 System.out.println(">>>>>>added payment");
                                                                                                             } catch (Exception e) {
                                                                                                                 e.printStackTrace();
@@ -353,7 +358,7 @@ public class CallbackServlet extends HttpServlet {
     }
 
     private void createSuuppliers(final XeroClient client) {
-        getDB().getReference().child("17").child("suppliers").addValueEventListener(new
+        getDB().getReference().child(client.getStoreid()).child("suppliers").addValueEventListener(new
                                                                                             ValueEventListener() {
                                                                                                 @Override
                                                                                                 public void onDataChange(DataSnapshot dataSnapshot) {

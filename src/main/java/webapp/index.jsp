@@ -6,8 +6,10 @@
 </head>
 <body>
 <div class="container">
-	<h1>Xero API - Java</h1>
-	<a href="./RequestTokenServlet"><img src="<%=request.getContextPath()%>/images/connect_xero_button_blue1.png"></a>	
+	<h4>Bambapos is now integrated with Xero Accounting application</h4>
+	<br>
+	<h4>Click the button below to connect bambapos to your Xero organisation</h4>
+	<a href="./RequestTokenServlet"><img src="<%=request.getContextPath()%>/images/connect_xero_button_blue1.png"></a>
 </div>
 </body>
 </html>
