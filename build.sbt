@@ -7,5 +7,4 @@ libraryDependencies += "com.googlecode.json-simple" % "json-simple" % "1.1.1"
 libraryDependencies += "com.xero" % "xero-accounting-api-schema" % "0.0.2"
 libraryDependencies += "com.google.firebase" % "firebase-admin" % "4.1.2"
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.23"
-libraryDependencies += "org.eclipse.jetty.aggregate" % "jetty-all-server" % "8.2.0.v20160908"
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
