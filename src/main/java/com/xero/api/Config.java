@@ -48,7 +48,8 @@ public class Config {
 	    return instance;
 	}
     private void initializeFireBase() {
-        String HOMEDIR = System.getProperty("user.home");
+//        String HOMEDIR = System.getProperty("user.home");
+        String HOMEDIR ="/home/xlion";
         FirebaseOptions options = null;
         try {
             options = new FirebaseOptions.Builder()

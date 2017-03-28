@@ -65,22 +65,6 @@ public class CallbackServlet extends HttpServlet {
             request.getRequestDispatcher("callback.jsp").forward(request, response);
         }
     }
-    private void initializeFireBase() {
-        String HOMEDIR = System.getProperty("user.home");
-        FirebaseOptions options = null;
-        try {
-            options = new FirebaseOptions.Builder()
-                    .setCredential(FirebaseCredentials.fromCertificate(
-                            new FileInputStream(HOMEDIR + "/bambapos_firebasekey.json")))
-                    .setDatabaseUrl("https://bambapos-7cf8c.firebaseio.com")
-                    .build();
-            FirebaseApp.initializeApp(options);
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     private FirebaseDatabase getDB() {
         return FirebaseDatabase
@@ -88,7 +72,6 @@ public class CallbackServlet extends HttpServlet {
     }
 
     private void updateXero(OAuthAccessToken accessToken,String storeid) {
-        initializeFireBase();
         XeroClient client = new XeroClient();
         getDB().getReference().child("xero_tokens").child(storeid).setValue(accessToken.getAll());
         client.setStoreid(storeid);
