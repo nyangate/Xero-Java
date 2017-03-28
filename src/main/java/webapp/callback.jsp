@@ -17,7 +17,7 @@
     </button>
 	<br>
 	<br>
-	<a href="http://app.bambapos.com">Take me to Bambapos</a>
+	<a href="91.194.91.50:4321">Take me to Bambapos</a>
 </div>
 
 </body>
