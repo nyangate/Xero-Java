@@ -33,7 +33,6 @@ public class RequestTokenServlet extends HttpServlet {
 		if(config.getAppType().equals("PRIVATE")) {
 			response.sendRedirect("./callback.jsp");
 		} else {
-			System.out.println("store id to use is "+request.getQueryString().replace("storeid=",""));
 
 			OAuthRequestToken requestToken = new OAuthRequestToken(config);
 			requestToken.execute();
@@ -43,7 +42,11 @@ public class RequestTokenServlet extends HttpServlet {
 
 			TokenStorage storage = new TokenStorage();
             HashMap<String,String>tokens=requestToken.getAll();
+            try{
             tokens.put("storeid",request.getQueryString().replace("storeid=",""));
+            }catch (Exception e){
+            	e.printStackTrace();
+			}
 			storage.save(response,tokens);
 
 			//Build the Authorization URL and redirect User

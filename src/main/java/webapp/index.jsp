@@ -6,9 +6,9 @@
 </head>
 <body>
 <div class="container">
-	<h4>Bambapos is now integrated with Xero Accounting application</h4>
+	<h4>Bambapos is now integrated with Xero</h4>
 	<br>
-	<h4>Click the button below to connect bambapos to your Xero organisation</h4>
+	<h4></h4>
 	<a href="./RequestTokenServlet"><img src="<%=request.getContextPath()%>/images/connect_xero_button_blue1.png"></a>
 </div>
 </body>

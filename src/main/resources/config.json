@@ -4,13 +4,12 @@
 	"Accept" : "application/xml",
 	"ConsumerKey":"TIHKWFI8HCTGC7JRXJ7KRKHM3E5KGZ",
 	"ConsumerSecret":"I3RME2F1NK71QFPBOL9XBYQLL50DMI",
-	"AppType" : "PUBLIC",
-	"UserAgent": "BambaAccounts",
+	"UserAgent": "Bambapos",
 	"ApiBaseUrl" : "https://api.xero.com",
 	"ApiEndpointPath" : "/api.xro/2.0/",
 	"RequestTokenPath": "/oauth/RequestToken",
 	"AuthenticateUrl" : "/oauth/Authorize",
 	"AccessTokenPath"  : "/oauth/AccessToken",
-	"CallbackBaseUrl" : "http://localhost:8080/bambaposxero",
+	"CallbackBaseUrl" : "http://91.194.91.50:8080/bambaposxero",
 	"CallbackPath" : "/CallbackServlet"
 }

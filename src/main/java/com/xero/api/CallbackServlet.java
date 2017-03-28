@@ -1,5 +1,8 @@
 package com.xero.api;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseCredentials;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -12,6 +15,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -46,6 +51,7 @@ public class CallbackServlet extends HttpServlet {
         accessToken.build(verifier, storage.get(request, "tempToken"), storage.get(request, "tempTokenSecret")).execute();
 
         if (!accessToken.isSuccess()) {
+            System.out.println("Access CallBack Unsuccessful");
             storage.clear(response);
             request.getRequestDispatcher("index.jsp").forward(request, response);
         } else {
@@ -59,6 +65,22 @@ public class CallbackServlet extends HttpServlet {
             request.getRequestDispatcher("callback.jsp").forward(request, response);
         }
     }
+    private void initializeFireBase() {
+        String HOMEDIR = System.getProperty("user.home");
+        FirebaseOptions options = null;
+        try {
+            options = new FirebaseOptions.Builder()
+                    .setCredential(FirebaseCredentials.fromCertificate(
+                            new FileInputStream(HOMEDIR + "/bambapos_firebasekey.json")))
+                    .setDatabaseUrl("https://bambapos-7cf8c.firebaseio.com")
+                    .build();
+            FirebaseApp.initializeApp(options);
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     private FirebaseDatabase getDB() {
         return FirebaseDatabase
@@ -66,6 +88,7 @@ public class CallbackServlet extends HttpServlet {
     }
 
     private void updateXero(OAuthAccessToken accessToken,String storeid) {
+        initializeFireBase();
         XeroClient client = new XeroClient();
         getDB().getReference().child("xero_tokens").child(storeid).setValue(accessToken.getAll());
         client.setStoreid(storeid);
