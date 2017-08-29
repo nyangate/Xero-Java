@@ -9,16 +9,20 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 </head>
-<body>
-<div class="container">
-	<h4>Products,Invoices and Payments are being updated in Xero</h4>
-	<button>
-        <a href="http://xero.com">Take me to Xero</a>
-    </button>
-	<br>
-	<br>
-	<a href="http://91.194.91.50:4321">Take me to Bambapos</a>
-</div>
+<body class="panel report-card product-info">
+
+<section>
+    <div class="panel blue-bg">
+
+        <section class="error-wrapper text-center">
+            <!--<h1><img alt="" src="images/404-error.png"></h1>-->
+            <h3>Taking you back to Bambapos...</h3>
+            <h4></h4>
+            <a class="back-btn" href="/">Stay in Xero</a>
+        </section>
+
+    </div>
+</section>
 
 </body>
 </html>
